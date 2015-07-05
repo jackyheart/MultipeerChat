@@ -15,7 +15,9 @@
 		8906D5E01B442252007ECF10 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8906D5DF1B442252007ECF10 /* Images.xcassets */; };
 		8906D5E31B442252007ECF10 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8906D5E11B442252007ECF10 /* LaunchScreen.xib */; };
 		8906D5EF1B442252007ECF10 /* MultipeerChatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8906D5EE1B442252007ECF10 /* MultipeerChatTests.swift */; };
+		896CB7721B481A97004EC081 /* DisplayNameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 896CB7711B481A97004EC081 /* DisplayNameViewController.swift */; };
 		898830F51B4575F7007E4592 /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898830F41B4575F7007E4592 /* ChatViewController.swift */; };
+		898830F71B458A24007E4592 /* PeerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898830F61B458A24007E4592 /* PeerCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,7 +43,9 @@
 		8906D5E81B442252007ECF10 /* MultipeerChatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MultipeerChatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8906D5ED1B442252007ECF10 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8906D5EE1B442252007ECF10 /* MultipeerChatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipeerChatTests.swift; sourceTree = "<group>"; };
+		896CB7711B481A97004EC081 /* DisplayNameViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayNameViewController.swift; sourceTree = "<group>"; };
 		898830F41B4575F7007E4592 /* ChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
+		898830F61B458A24007E4592 /* PeerCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +89,8 @@
 			children = (
 				8906D5D81B442252007ECF10 /* AppDelegate.swift */,
 				8906D5DA1B442252007ECF10 /* ViewController.swift */,
+				896CB7711B481A97004EC081 /* DisplayNameViewController.swift */,
+				898830F61B458A24007E4592 /* PeerCell.swift */,
 				898830F41B4575F7007E4592 /* ChatViewController.swift */,
 				39897E291B44D8F2003CA0E8 /* ConnectionManager.swift */,
 				39897E2C1B44E037003CA0E8 /* CommonConfig.swift */,
@@ -222,9 +228,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				8906D5DB1B442252007ECF10 /* ViewController.swift in Sources */,
+				898830F71B458A24007E4592 /* PeerCell.swift in Sources */,
 				39897E2D1B44E037003CA0E8 /* CommonConfig.swift in Sources */,
 				39897E2A1B44D8F2003CA0E8 /* ConnectionManager.swift in Sources */,
 				898830F51B4575F7007E4592 /* ChatViewController.swift in Sources */,
+				896CB7721B481A97004EC081 /* DisplayNameViewController.swift in Sources */,
 				8906D5D91B442252007ECF10 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
