@@ -55,7 +55,7 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         // Dispose of any resources that can be recreated.
     }
     
-    // MARK: - Business Logic
+    // MARK: - NSNotificationCenter
     
     func refreshChatList(notification:NSNotification) {
         
@@ -128,7 +128,7 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         let dateString = formatter.stringFromDate(date)
         
         //display
-        if self.session?.myPeerID == peerID {
+        if self.session!.myPeerID == peerID {
         
             row.textLabel?.textAlignment = .Right
             row.detailTextLabel?.textAlignment = .Right

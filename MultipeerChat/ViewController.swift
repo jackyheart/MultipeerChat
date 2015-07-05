@@ -27,12 +27,12 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         //session
         self.peerID = MCPeerID(displayName: displayName)
         self.session = MCSession(peer: self.peerID, securityIdentity: nil, encryptionPreference: .Required)
-        self.session?.delegate = self
+        self.session!.delegate = self
         self.advertiser = MCAdvertiserAssistant(serviceType: kServiceType, discoveryInfo: nil, session: self.session)
         self.browser = MCBrowserViewController(serviceType: kServiceType, session: self.session)
-        self.browser?.delegate = self
+        self.browser!.delegate = self
         
-        self.advertiser?.start()//start advertising (by default)
+        self.advertiser!.start()//start advertising (by default)
         
         //activity indicator
         self.activityIndicator = UIActivityIndicatorView(frame: CGRectMake(0,0, 50, 50)) as UIActivityIndicatorView
@@ -57,9 +57,9 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         let toggle = sender as! UISwitch
         
         if(toggle.on) {
-            self.advertiser?.start()
+            self.advertiser!.start()
         } else {
-            self.advertiser?.stop()
+            self.advertiser!.stop()
         }
     }
     
@@ -70,7 +70,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
     
     @IBAction func disconnectTapped(sender: AnyObject) {
     
-        self.session?.disconnect()
+        self.session!.disconnect()
         self.tblView.reloadData()
     }
     
@@ -83,7 +83,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
     
     func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
         
-        print("myPeerID: \(self.session?.myPeerID)")
+        print("myPeerID: \(self.session!.myPeerID)")
         print("peerID: \(peerID)")
         
         switch state {
@@ -142,7 +142,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
             
             //track new messages
             newMessagesInt++
-            chatArray?.append(msgDictionary)
+            chatArray!.append(msgDictionary)
         }
         
         //save back to NSUserDefaults
@@ -169,12 +169,12 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
     
     func browserViewControllerDidFinish(browserViewController: MCBrowserViewController!) {
         
-        self.browser?.dismissViewControllerAnimated(true, completion: nil)
+        self.browser!.dismissViewControllerAnimated(true, completion: nil)
     }
     
     func browserViewControllerWasCancelled(browserViewController: MCBrowserViewController!) {
         
-        self.browser?.dismissViewControllerAnimated(true, completion: nil)
+        self.browser!.dismissViewControllerAnimated(true, completion: nil)
     }
     
     //MARK: - UITableViewDataSource
@@ -183,8 +183,8 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         
         self.activityIndicator!.stopAnimating()
         
-        print("count: \(self.session?.connectedPeers.count)")
-        return (self.session?.connectedPeers.count)!
+        print("count: \(self.session!.connectedPeers.count)")
+        return self.session!.connectedPeers.count
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -192,26 +192,30 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         let cellIdentifier = "CellIdentifier"
         let row = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! PeerCell
         
-        let peerID = self.session?.connectedPeers[indexPath.row] as! MCPeerID
+        let peerID = self.session!.connectedPeers[indexPath.row] as! MCPeerID
         row.textLabel?.text = peerID.displayName
         row.detailTextLabel?.text = peerID.description
         
         print("\\ncellForRow peerID: \(peerID)")
         
         let defaults = NSUserDefaults.standardUserDefaults()
-        var newMsgCountStr = defaults.objectForKey(peerID.displayName+"counter") as! String
+        var newMsgCountStr = defaults.objectForKey(peerID.displayName+"counter") as? String
         print("newMessagesCountStr:\(newMsgCountStr)")
         row.counterLbl.layer.cornerRadius = row.counterLbl.bounds.width * 0.5
         
-        if(newMsgCountStr.toInt() == 0) {
+        if let msgCount = newMsgCountStr {
         
-            row.counterLbl.hidden = true
-        }
-        else {
-        
-            row.counterLbl.hidden = false
-            row.counterLbl.text = newMsgCountStr
-        }
+            let counter = msgCount.toInt()
+            
+            if(counter == 0) {
+            
+                row.counterLbl.hidden = true
+            } else {
+            
+                row.counterLbl.hidden = false
+                row.counterLbl.text = msgCount
+            }
+        }//end if
         
         return row
     }
@@ -228,10 +232,14 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
                 self.tblView.deselectRowAtIndexPath(selIdxPath, animated: true)
                 
                 //pass data
-                let selPeerID = self.session?.connectedPeers[selIdxPath.row] as! MCPeerID
+                let selPeerID = self.session!.connectedPeers[selIdxPath.row] as! MCPeerID
                 let controller = segue.destinationViewController as! ChatViewController
                 controller.session = self.session
                 controller.peerID = selPeerID
+                
+                //reset new message counter to 0
+                let defaults = NSUserDefaults.standardUserDefaults()
+                defaults.setObject("0", forKey: selPeerID.displayName+"counter")
                 
             }//end if
         }//end if
