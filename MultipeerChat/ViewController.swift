@@ -13,12 +13,12 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
 
     @IBOutlet weak var tblView: UITableView!
     
-    var peerID:MCPeerID?
-    var session:MCSession?
-    var browser:MCBrowserViewController?
-    var advertiser:MCAdvertiserAssistant?
-    var displayName:String?
-    var activityIndicator:UIActivityIndicatorView?
+    var peerID:MCPeerID!
+    var session:MCSession!
+    var browser:MCBrowserViewController!
+    var advertiser:MCAdvertiserAssistant!
+    var displayName:String!
+    var activityIndicator:UIActivityIndicatorView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,19 +27,19 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         //session
         self.peerID = MCPeerID(displayName: displayName)
         self.session = MCSession(peer: self.peerID, securityIdentity: nil, encryptionPreference: .Required)
-        self.session!.delegate = self
+        self.session.delegate = self
         self.advertiser = MCAdvertiserAssistant(serviceType: kServiceType, discoveryInfo: nil, session: self.session)
         self.browser = MCBrowserViewController(serviceType: kServiceType, session: self.session)
-        self.browser!.delegate = self
+        self.browser.delegate = self
         
-        self.advertiser!.start()//start advertising (by default)
+        self.advertiser.start()//start advertising (by default)
         
         //activity indicator
         self.activityIndicator = UIActivityIndicatorView(frame: CGRectMake(0,0, 50, 50)) as UIActivityIndicatorView
-        self.activityIndicator!.center = self.view.center
-        self.activityIndicator!.hidesWhenStopped = true
-        self.activityIndicator!.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray
-        view.addSubview(self.activityIndicator!)
+        self.activityIndicator.center = self.view.center
+        self.activityIndicator.hidesWhenStopped = true
+        self.activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray
+        view.addSubview(self.activityIndicator)
         
         //title
         self.title = displayName
@@ -50,6 +50,16 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         // Dispose of any resources that can be recreated.
     }
     
+    // MARK: - Helpers
+
+    func updateTableview(){
+        self.tblView.reloadData()
+        
+        if self.tblView.contentSize.height > self.tblView.frame.size.height {
+            self.tblView.scrollToRowAtIndexPath(NSIndexPath(forRow: self.session.connectedPeers.count - 1, inSection: 0), atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
+        }
+    }
+    
     //MARK: - IBActions
     
     @IBAction func discoveredChanged(sender: AnyObject) {
@@ -57,20 +67,20 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         let toggle = sender as! UISwitch
         
         if(toggle.on) {
-            self.advertiser!.start()
+            self.advertiser.start()
         } else {
-            self.advertiser!.stop()
+            self.advertiser.stop()
         }
     }
     
     @IBAction func browseNearby(sender: AnyObject) {
     
-        self.presentViewController(self.browser!, animated: true, completion: nil)
+        self.presentViewController(self.browser, animated: true, completion: nil)
     }
     
     @IBAction func disconnectTapped(sender: AnyObject) {
     
-        self.session!.disconnect()
+        self.session.disconnect()
         self.tblView.reloadData()
     }
     
@@ -83,7 +93,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
     
     func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
         
-        print("myPeerID: \(self.session!.myPeerID)")
+        print("myPeerID: \(self.session.myPeerID)")
         print("peerID: \(peerID)")
         
         switch state {
@@ -93,14 +103,14 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
             
         case .Connected:
             println("Connected..")
-            self.activityIndicator!.startAnimating()
+            self.activityIndicator.startAnimating()
             self.tblView.reloadData()
 
         case .NotConnected:
             println("Not Connected..")
             let appDomain = NSBundle.mainBundle().bundleIdentifier!
             NSUserDefaults.standardUserDefaults().removePersistentDomainForName(appDomain)
-            self.activityIndicator!.startAnimating()
+            self.activityIndicator.startAnimating()
             self.tblView.reloadData()
             
         default:
@@ -177,22 +187,22 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
     
     func browserViewControllerDidFinish(browserViewController: MCBrowserViewController!) {
         
-        self.browser!.dismissViewControllerAnimated(true, completion: nil)
+        self.browser.dismissViewControllerAnimated(true, completion: nil)
     }
     
     func browserViewControllerWasCancelled(browserViewController: MCBrowserViewController!) {
         
-        self.browser!.dismissViewControllerAnimated(true, completion: nil)
+        self.browser.dismissViewControllerAnimated(true, completion: nil)
     }
     
     //MARK: - UITableViewDataSource
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        self.activityIndicator!.stopAnimating()
+        self.activityIndicator.stopAnimating()
         
-        print("count: \(self.session!.connectedPeers.count)")
-        return self.session!.connectedPeers.count
+        print("count: \(self.session.connectedPeers.count)")
+        return self.session.connectedPeers.count
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -200,7 +210,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         let cellIdentifier = "CellIdentifier"
         let row = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! PeerCell
         
-        let peerID = self.session!.connectedPeers[indexPath.row] as! MCPeerID
+        let peerID = self.session.connectedPeers[indexPath.row] as! MCPeerID
         row.textLabel?.text = peerID.displayName
         row.detailTextLabel?.text = peerID.description
         
@@ -239,7 +249,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
             if let selIdxPath = self.tblView.indexPathForSelectedRow() {
                 
                 //pass data
-                let selPeerID = self.session!.connectedPeers[selIdxPath.row] as! MCPeerID
+                let selPeerID = self.session.connectedPeers[selIdxPath.row] as! MCPeerID
                 let controller = segue.destinationViewController as! ChatViewController
                 controller.session = self.session
                 controller.peerID = selPeerID
