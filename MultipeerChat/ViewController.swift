@@ -98,6 +98,8 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
 
         case .NotConnected:
             println("Not Connected..")
+            let appDomain = NSBundle.mainBundle().bundleIdentifier!
+            NSUserDefaults.standardUserDefaults().removePersistentDomainForName(appDomain)
             self.activityIndicator!.startAnimating()
             self.tblView.reloadData()
             
@@ -117,21 +119,24 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         var notification = UILocalNotification()
         notification.alertBody = "\(peerID.displayName) sent you a message"
         notification.fireDate = NSDate()
+        //notification.applicationIconBadgeNumber = 1
         UIApplication.sharedApplication().scheduleLocalNotification(notification)
         
         //message data
         let defaults = NSUserDefaults.standardUserDefaults()
         let date = NSDate()
-        let msgDictionary = ["message":message, "date":date, "peerID":peerID]
+        let msgDictionary = ["message":message, "date":date, "peerIDName":peerID.displayName]
         
         //retrieve chat history
         var chatArray = defaults.objectForKey(peerID.displayName) as? [[String:AnyObject]]
         var newMessagesInt = 0//keep track of new messages count
         
+        var tmpArray:[[String:AnyObject]] = []
+        
         if chatArray == nil {
         
             //first initalization
-            chatArray = [msgDictionary]
+            tmpArray = [msgDictionary]
             newMessagesInt = 1
         }
         else
@@ -142,11 +147,14 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
             
             //track new messages
             newMessagesInt++
-            chatArray!.append(msgDictionary)
+            
+            tmpArray = chatArray!
+            tmpArray.append(msgDictionary)
         }
         
         //save back to NSUserDefaults
-        defaults.setObject(chatArray, forKey: peerID.displayName)
+        //let chatData = NSKeyedArchiver.archivedDataWithRootObject(tmpArray)
+        defaults.setObject(tmpArray, forKey: peerID.displayName)
         defaults.setObject(String(newMessagesInt), forKey: peerID.displayName+"counter")
         
         //Notify
@@ -202,6 +210,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         var newMsgCountStr = defaults.objectForKey(peerID.displayName+"counter") as? String
         print("newMessagesCountStr:\(newMsgCountStr)")
         row.counterLbl.layer.cornerRadius = row.counterLbl.bounds.width * 0.5
+        row.counterLbl.backgroundColor = UIColor.blueColor()
         
         if let msgCount = newMsgCountStr {
         
@@ -210,6 +219,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
             if(counter == 0) {
             
                 row.counterLbl.hidden = true
+                
             } else {
             
                 row.counterLbl.hidden = false
@@ -227,9 +237,6 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         if segue.identifier == "SegueChat" {
         
             if let selIdxPath = self.tblView.indexPathForSelectedRow() {
-            
-                //deselect row
-                self.tblView.deselectRowAtIndexPath(selIdxPath, animated: true)
                 
                 //pass data
                 let selPeerID = self.session!.connectedPeers[selIdxPath.row] as! MCPeerID
@@ -240,6 +247,9 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
                 //reset new message counter to 0
                 let defaults = NSUserDefaults.standardUserDefaults()
                 defaults.setObject("0", forKey: selPeerID.displayName+"counter")
+                
+                //deselect row
+                self.tblView.deselectRowAtIndexPath(selIdxPath, animated: true)
                 
             }//end if
         }//end if

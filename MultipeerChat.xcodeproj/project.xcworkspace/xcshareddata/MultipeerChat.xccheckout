@@ -7,14 +7,14 @@
 	<key>IDESourceControlProjectIdentifier</key>
 	<string>1E569363-EB2E-4EDB-BB09-0E5E838D354F</string>
 	<key>IDESourceControlProjectName</key>
-	<string>project</string>
+	<string>MultipeerChat</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>54C63BEC0201A0BD9AD11879391BE2E6E5E86AE7</key>
 		<string>https://github.com/jackyheart/MultipeerChat.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>MultipeerChat.xcodeproj/project.xcworkspace</string>
+	<string>MultipeerChat.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>54C63BEC0201A0BD9AD11879391BE2E6E5E86AE7</key>

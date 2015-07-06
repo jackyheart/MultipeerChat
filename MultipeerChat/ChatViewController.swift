@@ -17,12 +17,21 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
     var session:MCSession?
     var peerID:MCPeerID?
     var dataArray = [[String:AnyObject]]()
+    var kbHeight: CGFloat!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "refreshChatList:", name: "MCDidReceiveData", object: nil)
+        
+        //keyboard
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
+        
+        let recognizer = UITapGestureRecognizer(target: self, action: "handleTap:")
+        self.view.addGestureRecognizer(recognizer)
         
         self.title = self.peerID?.displayName
     }
@@ -32,6 +41,29 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         
         //retrieve chat history
         let defaults = NSUserDefaults.standardUserDefaults()
+        
+        /*
+        if let chatData = defaults.objectForKey(self.peerID!.displayName) as? NSData {
+            
+            if let chatArray = NSKeyedUnarchiver.unarchiveObjectWithData(chatData) as? [[String:AnyObject]] {
+                
+                self.dataArray = chatArray
+            }
+        }
+        */
+        
+        
+        if let chatArray = defaults.objectForKey(self.peerID!.displayName) as? [[String:AnyObject]] {
+        
+            dataArray = chatArray
+        }
+        else {
+        
+            print("Chat is blank !")
+        }
+        
+        
+        /*
         var chatArray = defaults.objectForKey(self.peerID!.displayName) as? [[String:AnyObject]]
         
         if chatArray != nil {
@@ -42,6 +74,7 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         {
             print("Chat is blank !")
         }
+        */
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -55,6 +88,43 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         // Dispose of any resources that can be recreated.
     }
     
+    // MARK: - Keyboard
+    
+    func keyboardWillShow(notification:NSNotification) {
+        
+        if let userInfo = notification.userInfo {
+            if let keyboardSize =  (userInfo[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
+                kbHeight = keyboardSize.height
+                
+                print("kbHeight: \(kbHeight)")
+                
+                animateTextField(true)
+            }
+        }
+    }
+    
+    func keyboardWillHide(notification: NSNotification) {
+        animateTextField(false)
+    }
+    
+    func animateTextField(up: Bool) {
+        
+        var movement = (up ? -(kbHeight) : (kbHeight))
+        
+        print("movement: \(movement)")
+        
+        UIView.animateWithDuration(0.3, animations: {
+            self.view.frame = CGRectOffset(self.view.frame, 0, movement)
+        })
+    }
+    
+    // MARK: - Gesture
+    
+    func handleTap(recognizer:UITapGestureRecognizer) {
+        
+        self.inputTF.resignFirstResponder()
+    }
+    
     // MARK: - NSNotificationCenter
     
     func refreshChatList(notification:NSNotification) {
@@ -63,6 +133,7 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         self.dataArray.append(msgDictionary)
     
         self.tblView.reloadData()
+        //self.tblView.setContentOffset(CGPointMake(0, CGFloat.max), animated: true)
     }
     
     // MARK: - IBActions
@@ -81,6 +152,21 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
             if !self.session!.sendData(data, toPeers: peerArray as [AnyObject], withMode: MCSessionSendDataMode.Reliable, error: &error) {
                 
                 print("error: \(error?.localizedDescription)")
+            }
+            else {
+                
+                let date = NSDate()
+                let msgDictionary = ["message":self.inputTF.text, "date":date, "peerIDName":self.session!.myPeerID.displayName]
+                self.dataArray.append(msgDictionary)
+                
+                //save back to NSUserDefaults
+                //let chatData = NSKeyedArchiver.archivedDataWithRootObject(self.dataArray)
+                let defaults = NSUserDefaults.standardUserDefaults()
+                defaults.setObject(self.dataArray, forKey: self.peerID!.displayName)
+                
+                self.tblView.reloadData()
+                
+                self.inputTF.text = ""
             }
             
         } else {
@@ -105,10 +191,13 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
      
+        print("chatVC: count: \(self.dataArray.count)")
         return self.dataArray.count
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        
+        print("chatVC: cellForRowAtIdxPath")
         
         let cellIdentifier = "CellIdentifier"
         let row = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! UITableViewCell
@@ -119,16 +208,17 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         
         let message = msgDictionary["message"] as! String
         let date = msgDictionary["date"] as! NSDate
-        let peerID = msgDictionary["peerID"] as! MCPeerID
+        let peerIDName = msgDictionary["peerIDName"] as! String
         
         //formatter
         let formatter = NSDateFormatter()
         formatter.dateStyle = .ShortStyle
         formatter.timeStyle = .ShortStyle
         let dateString = formatter.stringFromDate(date)
+        print("dateString: \(dateString)")
         
         //display
-        if self.session!.myPeerID == peerID {
+        if self.session!.myPeerID.displayName == peerIDName {
         
             row.textLabel?.textAlignment = .Right
             row.detailTextLabel?.textAlignment = .Right
