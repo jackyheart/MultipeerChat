@@ -44,6 +44,12 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         //title
         self.title = displayName
     }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        updateTableview()
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -53,10 +59,16 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
     // MARK: - Helpers
 
     func updateTableview(){
-        self.tblView.reloadData()
         
-        if self.tblView.contentSize.height > self.tblView.frame.size.height {
-            self.tblView.scrollToRowAtIndexPath(NSIndexPath(forRow: self.session.connectedPeers.count - 1, inSection: 0), atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
+        if(self.session.connectedPeers.count > 0) {
+        
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                
+                self.tblView.reloadData()
+                
+                var lastIndex = NSIndexPath(forRow: self.session.connectedPeers.count - 1, inSection: 0)
+                self.tblView.scrollToRowAtIndexPath(lastIndex, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
+            })
         }
     }
     
@@ -81,7 +93,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
     @IBAction func disconnectTapped(sender: AnyObject) {
     
         self.session.disconnect()
-        self.tblView.reloadData()
+        updateTableview()
     }
     
     //MARK: - MCSessionDelegate
@@ -104,14 +116,14 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         case .Connected:
             println("Connected..")
             self.activityIndicator.startAnimating()
-            self.tblView.reloadData()
+            updateTableview()
 
         case .NotConnected:
             println("Not Connected..")
             let appDomain = NSBundle.mainBundle().bundleIdentifier!
             NSUserDefaults.standardUserDefaults().removePersistentDomainForName(appDomain)
             self.activityIndicator.startAnimating()
-            self.tblView.reloadData()
+            updateTableview()
             
         default:
             break;
@@ -124,13 +136,6 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         println("received data from peer: \(peerID)")
         let message = NSString(data: data, encoding: NSUTF8StringEncoding) as! String
         print("received message: \(message)\\n")
-        
-        //local notifications
-        var notification = UILocalNotification()
-        notification.alertBody = "\(peerID.displayName) sent you a message"
-        notification.fireDate = NSDate()
-        //notification.applicationIconBadgeNumber = 1
-        UIApplication.sharedApplication().scheduleLocalNotification(notification)
         
         //message data
         let defaults = NSUserDefaults.standardUserDefaults()
@@ -167,8 +172,18 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         defaults.setObject(tmpArray, forKey: peerID.displayName)
         defaults.setObject(String(newMessagesInt), forKey: peerID.displayName+"counter")
         
-        //Notify
+        //Notify data received
         NSNotificationCenter.defaultCenter().postNotificationName("MCDidReceiveData", object: msgDictionary)
+        
+        //local notifications
+        var notification = UILocalNotification()
+        notification.alertBody = "\(peerID.displayName) sent you a message"
+        notification.fireDate = NSDate()
+        notification.applicationIconBadgeNumber = newMessagesInt
+        UIApplication.sharedApplication().scheduleLocalNotification(notification)
+        
+        //update peer list
+        updateTableview()
     }
     
     func session(session: MCSession!, didReceiveStream stream: NSInputStream!, withName streamName: String!, fromPeer peerID: MCPeerID!) {

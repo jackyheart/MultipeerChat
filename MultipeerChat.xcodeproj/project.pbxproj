@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		39897E2A1B44D8F2003CA0E8 /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39897E291B44D8F2003CA0E8 /* ConnectionManager.swift */; };
 		39897E2D1B44E037003CA0E8 /* CommonConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39897E2C1B44E037003CA0E8 /* CommonConfig.swift */; };
 		8906D5D91B442252007ECF10 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8906D5D81B442252007ECF10 /* AppDelegate.swift */; };
 		8906D5DB1B442252007ECF10 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8906D5DA1B442252007ECF10 /* ViewController.swift */; };
@@ -31,7 +30,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		39897E291B44D8F2003CA0E8 /* ConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
 		39897E2C1B44E037003CA0E8 /* CommonConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonConfig.swift; sourceTree = "<group>"; };
 		8906D5D31B442252007ECF10 /* MultipeerChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MultipeerChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8906D5D71B442252007ECF10 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -92,7 +90,6 @@
 				896CB7711B481A97004EC081 /* DisplayNameViewController.swift */,
 				898830F61B458A24007E4592 /* PeerCell.swift */,
 				898830F41B4575F7007E4592 /* ChatViewController.swift */,
-				39897E291B44D8F2003CA0E8 /* ConnectionManager.swift */,
 				39897E2C1B44E037003CA0E8 /* CommonConfig.swift */,
 				8906D5DC1B442252007ECF10 /* Main.storyboard */,
 				8906D5DF1B442252007ECF10 /* Images.xcassets */,
@@ -230,7 +227,6 @@
 				8906D5DB1B442252007ECF10 /* ViewController.swift in Sources */,
 				898830F71B458A24007E4592 /* PeerCell.swift in Sources */,
 				39897E2D1B44E037003CA0E8 /* CommonConfig.swift in Sources */,
-				39897E2A1B44D8F2003CA0E8 /* ConnectionManager.swift in Sources */,
 				898830F51B4575F7007E4592 /* ChatViewController.swift in Sources */,
 				896CB7721B481A97004EC081 /* DisplayNameViewController.swift in Sources */,
 				8906D5D91B442252007ECF10 /* AppDelegate.swift in Sources */,

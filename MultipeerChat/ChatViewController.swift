@@ -52,7 +52,6 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         }
         */
         
-        
         if let chatArray = defaults.objectForKey(self.peerID!.displayName) as? [[String:AnyObject]] {
         
             dataArray = chatArray
@@ -62,19 +61,8 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
             print("Chat is blank !")
         }
         
-        
-        /*
-        var chatArray = defaults.objectForKey(self.peerID!.displayName) as? [[String:AnyObject]]
-        
-        if chatArray != nil {
-            
-            dataArray = chatArray!
-        }
-        else
-        {
-            print("Chat is blank !")
-        }
-        */
+        //reload table
+        updateTableview()
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -125,6 +113,23 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         self.inputTF.resignFirstResponder()
     }
     
+    // MARK: - Helpers
+    
+    func updateTableview(){
+    
+        if self.dataArray.count > 0 {
+       
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                
+                self.tblView.reloadData()
+                
+                var lastIndex = NSIndexPath(forRow: self.dataArray.count - 1, inSection: 0)
+                self.tblView.scrollToRowAtIndexPath(lastIndex, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
+            })
+        }
+        
+    }
+    
     // MARK: - NSNotificationCenter
     
     func refreshChatList(notification:NSNotification) {
@@ -132,8 +137,7 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         let msgDictionary = notification.object as! [String: AnyObject]
         self.dataArray.append(msgDictionary)
     
-        self.tblView.reloadData()
-        //self.tblView.setContentOffset(CGPointMake(0, CGFloat.max), animated: true)
+        updateTableview()
     }
     
     // MARK: - IBActions
@@ -164,7 +168,13 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
                 let defaults = NSUserDefaults.standardUserDefaults()
                 defaults.setObject(self.dataArray, forKey: self.peerID!.displayName)
                 
-                self.tblView.reloadData()
+                //dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    
+                    self.tblView.reloadData()
+                    
+                    var lastIndex = NSIndexPath(forRow: self.dataArray.count - 1, inSection: 0)
+                    self.tblView.scrollToRowAtIndexPath(lastIndex, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
+                //})
                 
                 self.inputTF.text = ""
             }
