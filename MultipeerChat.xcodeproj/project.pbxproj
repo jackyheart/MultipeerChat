@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		39897E2D1B44E037003CA0E8 /* CommonConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39897E2C1B44E037003CA0E8 /* CommonConfig.swift */; };
+		39B5324C1B4BA7D900FC83CA /* ChatCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B5324B1B4BA7D900FC83CA /* ChatCell.swift */; };
 		8906D5D91B442252007ECF10 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8906D5D81B442252007ECF10 /* AppDelegate.swift */; };
 		8906D5DB1B442252007ECF10 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8906D5DA1B442252007ECF10 /* ViewController.swift */; };
 		8906D5DE1B442252007ECF10 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8906D5DC1B442252007ECF10 /* Main.storyboard */; };
@@ -31,6 +32,7 @@
 
 /* Begin PBXFileReference section */
 		39897E2C1B44E037003CA0E8 /* CommonConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonConfig.swift; sourceTree = "<group>"; };
+		39B5324B1B4BA7D900FC83CA /* ChatCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatCell.swift; sourceTree = "<group>"; };
 		8906D5D31B442252007ECF10 /* MultipeerChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MultipeerChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8906D5D71B442252007ECF10 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8906D5D81B442252007ECF10 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -86,11 +88,12 @@
 			isa = PBXGroup;
 			children = (
 				8906D5D81B442252007ECF10 /* AppDelegate.swift */,
-				8906D5DA1B442252007ECF10 /* ViewController.swift */,
 				896CB7711B481A97004EC081 /* DisplayNameViewController.swift */,
-				898830F61B458A24007E4592 /* PeerCell.swift */,
+				8906D5DA1B442252007ECF10 /* ViewController.swift */,
 				898830F41B4575F7007E4592 /* ChatViewController.swift */,
 				39897E2C1B44E037003CA0E8 /* CommonConfig.swift */,
+				898830F61B458A24007E4592 /* PeerCell.swift */,
+				39B5324B1B4BA7D900FC83CA /* ChatCell.swift */,
 				8906D5DC1B442252007ECF10 /* Main.storyboard */,
 				8906D5DF1B442252007ECF10 /* Images.xcassets */,
 				8906D5E11B442252007ECF10 /* LaunchScreen.xib */,
@@ -228,6 +231,7 @@
 				898830F71B458A24007E4592 /* PeerCell.swift in Sources */,
 				39897E2D1B44E037003CA0E8 /* CommonConfig.swift in Sources */,
 				898830F51B4575F7007E4592 /* ChatViewController.swift in Sources */,
+				39B5324C1B4BA7D900FC83CA /* ChatCell.swift in Sources */,
 				896CB7721B481A97004EC081 /* DisplayNameViewController.swift in Sources */,
 				8906D5D91B442252007ECF10 /* AppDelegate.swift in Sources */,
 			);

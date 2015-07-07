@@ -10,15 +10,24 @@ import UIKit
 import MultipeerConnectivity
 
 class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControllerDelegate, UITableViewDataSource {
-
+    
+    @IBOutlet weak var discoverableStatusLbl: UILabel!
+    @IBOutlet weak var statusLbl: UILabel!
     @IBOutlet weak var tblView: UITableView!
+    @IBOutlet weak var btnDisconnect: UIButton!
+
+    /*
+    Service Type name:
+    - Must be 1–15 characters long
+    - Can contain only ASCII lowercase letters, numbers, and hyphens.
+    */
+    let kServiceType = "multi-peer-chat"
     
     var peerID:MCPeerID!
     var session:MCSession!
     var browser:MCBrowserViewController!
     var advertiser:MCAdvertiserAssistant!
     var displayName:String!
-    var activityIndicator:UIActivityIndicatorView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,15 +43,12 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         
         self.advertiser.start()//start advertising (by default)
         
-        //activity indicator
-        self.activityIndicator = UIActivityIndicatorView(frame: CGRectMake(0,0, 50, 50)) as UIActivityIndicatorView
-        self.activityIndicator.center = self.view.center
-        self.activityIndicator.hidesWhenStopped = true
-        self.activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray
-        view.addSubview(self.activityIndicator)
-        
-        //title
+        //UI
+        self.btnDisconnect.enabled = false
         self.title = displayName
+        
+        //navigation
+        //self.navigationItem.setHidesBackButton(true, animated: false)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -60,16 +66,15 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
 
     func updateTableview(){
         
-        if(self.session.connectedPeers.count > 0) {
-        
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                
-                self.tblView.reloadData()
-                
+        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+
+            self.tblView.reloadData()
+            
+            if(self.session.connectedPeers.count > 0) {
                 var lastIndex = NSIndexPath(forRow: self.session.connectedPeers.count - 1, inSection: 0)
                 self.tblView.scrollToRowAtIndexPath(lastIndex, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
-            })
-        }
+            }
+        })
     }
     
     //MARK: - IBActions
@@ -80,8 +85,10 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         
         if(toggle.on) {
             self.advertiser.start()
+            discoverableStatusLbl.text = "Currently VISIBLE to others"
         } else {
             self.advertiser.stop()
+            discoverableStatusLbl.text = "Currently INVISIBLE to others"
         }
     }
     
@@ -92,8 +99,15 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
     
     @IBAction func disconnectTapped(sender: AnyObject) {
     
-        self.session.disconnect()
-        updateTableview()
+        var alert = UIAlertController(title: "Confirmation", message: "Do you want to disconnect from the session ?", preferredStyle: UIAlertControllerStyle.Alert)
+        alert.addAction(UIAlertAction(title: "NO", style: UIAlertActionStyle.Cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "YES", style: UIAlertActionStyle.Destructive, handler: { action in
+            
+            self.session.disconnect()
+            self.updateTableview()
+            
+        }))
+        self.presentViewController(alert, animated: true, completion: nil)
     }
     
     //MARK: - MCSessionDelegate
@@ -113,16 +127,37 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         case .Connecting:
             println("Connecting..")
             
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                self.statusLbl.text = "Status: Connecting with \(peerID.displayName)..."
+            })
+            
         case .Connected:
             println("Connected..")
-            self.activityIndicator.startAnimating()
+
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                
+                self.statusLbl.text = "Status: Connected to \(peerID.displayName)."
+                self.btnDisconnect.enabled = true
+            })
+                
             updateTableview()
 
         case .NotConnected:
             println("Not Connected..")
-            let appDomain = NSBundle.mainBundle().bundleIdentifier!
-            NSUserDefaults.standardUserDefaults().removePersistentDomainForName(appDomain)
-            self.activityIndicator.startAnimating()
+            
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                
+                self.statusLbl.text = "Status: Disconnected from \(peerID.displayName)."
+                
+                if self.session.connectedPeers.count == 0 {
+                    self.btnDisconnect.enabled = false
+                }
+            })
+
+            //remove stored data for disconnected peer
+            NSUserDefaults.standardUserDefaults().removeObjectForKey(peerID.displayName)
+            
+            //reload table
             updateTableview()
             
         default:
@@ -179,6 +214,7 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         var notification = UILocalNotification()
         notification.alertBody = "\(peerID.displayName) sent you a message"
         notification.fireDate = NSDate()
+        notification.soundName = UILocalNotificationDefaultSoundName
         notification.applicationIconBadgeNumber = newMessagesInt
         UIApplication.sharedApplication().scheduleLocalNotification(notification)
         
@@ -214,9 +250,6 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        self.activityIndicator.stopAnimating()
-        
-        print("count: \(self.session.connectedPeers.count)")
         return self.session.connectedPeers.count
     }
     
@@ -226,16 +259,13 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
         let row = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! PeerCell
         
         let peerID = self.session.connectedPeers[indexPath.row] as! MCPeerID
-        row.textLabel?.text = peerID.displayName
-        row.detailTextLabel?.text = peerID.description
+        row.peerNameLbl.text = peerID.displayName
         
-        print("\\ncellForRow peerID: \(peerID)")
+        print("\\ncellForRow peerID: \(peerID), desc: \(peerID.description)")
         
         let defaults = NSUserDefaults.standardUserDefaults()
         var newMsgCountStr = defaults.objectForKey(peerID.displayName+"counter") as? String
         print("newMessagesCountStr:\(newMsgCountStr)")
-        row.counterLbl.layer.cornerRadius = row.counterLbl.bounds.width * 0.5
-        row.counterLbl.backgroundColor = UIColor.blueColor()
         
         if let msgCount = newMsgCountStr {
         
@@ -251,6 +281,10 @@ class ViewController: UIViewController, MCSessionDelegate, MCBrowserViewControll
                 row.counterLbl.text = msgCount
             }
         }//end if
+        else {
+        
+            row.counterLbl.hidden = true
+        }
         
         return row
     }

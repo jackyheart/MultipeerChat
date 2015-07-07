@@ -25,14 +25,14 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         // Do any additional setup after loading the view.
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "refreshChatList:", name: "MCDidReceiveData", object: nil)
         
-        //keyboard
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
+        //notification center
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardFrameDidChange:", name: UIKeyboardWillChangeFrameNotification, object: nil)
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
-        
+        //gesture recognizer
         let recognizer = UITapGestureRecognizer(target: self, action: "handleTap:")
         self.view.addGestureRecognizer(recognizer)
         
+        //UI
         self.title = self.peerID?.displayName
     }
     
@@ -78,32 +78,31 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
     
     // MARK: - Keyboard
     
-    func keyboardWillShow(notification:NSNotification) {
+    func keyboardFrameDidChange(notification: NSNotification) {
         
-        if let userInfo = notification.userInfo {
-            if let keyboardSize =  (userInfo[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
-                kbHeight = keyboardSize.height
-                
-                print("kbHeight: \(kbHeight)")
-                
-                animateTextField(true)
-            }
-        }
-    }
-    
-    func keyboardWillHide(notification: NSNotification) {
-        animateTextField(false)
-    }
-    
-    func animateTextField(up: Bool) {
+        let userInfo = notification.userInfo!
+        let animationDuration: NSTimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as! NSNumber).doubleValue
         
-        var movement = (up ? -(kbHeight) : (kbHeight))
+        let keyboardScreenBeginFrame = (userInfo[UIKeyboardFrameBeginUserInfoKey] as! NSValue).CGRectValue()
+        let keyboardScreenEndFrame = (userInfo[UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue()
         
-        print("movement: \(movement)")
+        let keyboardViewBeginFrame = view.convertRect(keyboardScreenBeginFrame, fromView: view.window)
+        let keyboardViewEndFrame = view.convertRect(keyboardScreenEndFrame, fromView: view.window)
+        let originDelta = keyboardViewEndFrame.origin.y - keyboardViewBeginFrame.origin.y
         
-        UIView.animateWithDuration(0.3, animations: {
-            self.view.frame = CGRectOffset(self.view.frame, 0, movement)
-        })
+        UIView.animateWithDuration(animationDuration, delay:0, options:.BeginFromCurrentState, animations: {
+            
+            //self.view.layoutIfNeeded()
+            var newFrame = self.view.frame
+            let keyboardFrameEnd = self.view.convertRect(keyboardScreenEndFrame, toView: nil)
+            let keyboardFrameBegin = self.view.convertRect(keyboardScreenBeginFrame, toView: nil)
+            
+            var offset = (keyboardFrameBegin.origin.y - keyboardFrameEnd.origin.y)
+            newFrame.origin.y -= offset
+            
+            self.view.frame = newFrame
+            
+        }, completion: nil)
     }
     
     // MARK: - Gesture
@@ -117,17 +116,16 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
     
     func updateTableview(){
     
-        if self.dataArray.count > 0 {
-       
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                
-                self.tblView.reloadData()
-                
+        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+
+            self.tblView.reloadData()
+            
+            if self.dataArray.count > 0 {
+            
                 var lastIndex = NSIndexPath(forRow: self.dataArray.count - 1, inSection: 0)
                 self.tblView.scrollToRowAtIndexPath(lastIndex, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
-            })
-        }
-        
+            }
+        })
     }
     
     // MARK: - NSNotificationCenter
@@ -210,7 +208,7 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         print("chatVC: cellForRowAtIdxPath")
         
         let cellIdentifier = "CellIdentifier"
-        let row = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! UITableViewCell
+        let row = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! ChatCell
         
         //data
         let msgDictionary = self.dataArray[indexPath.row] as [String:AnyObject]
@@ -225,24 +223,30 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         formatter.dateStyle = .ShortStyle
         formatter.timeStyle = .ShortStyle
         let dateString = formatter.stringFromDate(date)
-        print("dateString: \(dateString)")
+        print("peerID:\(peerIDName), dateString: \(dateString)")
         
         //display
         if self.session!.myPeerID.displayName == peerIDName {
         
-            row.textLabel?.textAlignment = .Right
-            row.detailTextLabel?.textAlignment = .Right
+            row.messageTF.textAlignment = .Right
+            row.dateTF.textAlignment = .Right
             
-            row.textLabel?.text = message
-            row.detailTextLabel?.text = dateString
+            row.messageTF.textColor = UIColor.blueColor()
+            row.messageTF.text = message
+            
+            row.dateTF.textColor = UIColor.grayColor()
+            row.dateTF.text = dateString
         }
         else {
         
-            row.textLabel?.textAlignment = .Left
-            row.detailTextLabel?.textAlignment = .Left
+            row.messageTF.textAlignment = .Left
+            row.dateTF.textAlignment = .Left
             
-            row.textLabel?.text = message
-            row.detailTextLabel?.text = dateString
+            row.messageTF.textColor = UIColor.greenColor()
+            row.messageTF.text = message
+            
+            row.dateTF.textColor = UIColor.grayColor()
+            row.dateTF.text = dateString
         }
         
         return row

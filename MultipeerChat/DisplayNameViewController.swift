@@ -15,15 +15,16 @@ class DisplayNameViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Do any additional setup after loading the view.
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
+        //notification center
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardFrameDidChange:", name: UIKeyboardWillChangeFrameNotification, object: nil)
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
-        
+        //gesture recognizer
         let recognizer = UITapGestureRecognizer(target: self, action: "handleTap:")
         self.view.addGestureRecognizer(recognizer)
-
-        // Do any additional setup after loading the view.
+        
+        //UI
         self.displayNameTF.text = UIDevice.currentDevice().name
         self.title = "MultiPeer Chat"
     }
@@ -35,32 +36,37 @@ class DisplayNameViewController: UIViewController {
     
     // MARK: - Keyboard
     
-    func keyboardWillShow(notification:NSNotification) {
-    
-        if let userInfo = notification.userInfo {
-            if let keyboardSize =  (userInfo[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
-                kbHeight = keyboardSize.height
+    func keyboardFrameDidChange(notification: NSNotification) {
+        
+        let userInfo = notification.userInfo!
+        let animationDuration: NSTimeInterval = (userInfo[UIKeyboardAnimationDurationUserInfoKey] as! NSNumber).doubleValue
+        
+        let keyboardScreenBeginFrame = (userInfo[UIKeyboardFrameBeginUserInfoKey] as! NSValue).CGRectValue()
+        let keyboardScreenEndFrame = (userInfo[UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue()
+        
+        let keyboardViewBeginFrame = view.convertRect(keyboardScreenBeginFrame, fromView: view.window)
+        let keyboardViewEndFrame = view.convertRect(keyboardScreenEndFrame, fromView: view.window)
+        let originDelta = keyboardViewEndFrame.origin.y - keyboardViewBeginFrame.origin.y
+
+        UIView.animateWithDuration(animationDuration, delay:0, options:.BeginFromCurrentState, animations: {
+            
+            //self.view.layoutIfNeeded()
+            var newFrame = self.view.frame
+            let keyboardFrameEnd = self.view.convertRect(keyboardScreenEndFrame, toView: nil)
+            let keyboardFrameBegin = self.view.convertRect(keyboardScreenBeginFrame, toView: nil)
+            
+            var offset = (keyboardFrameBegin.origin.y - keyboardFrameEnd.origin.y)
+            
+            if(abs(offset) > 100.0) {
                 
-                print("kbHeight: \(kbHeight)")
-                
-                animateTextField(true)
+                //if not quicktype, hardcode the offset
+                offset = offset > 0 ? 100.0 : -100
             }
-        }
-    }
-    
-    func keyboardWillHide(notification: NSNotification) {
-        animateTextField(false)
-    }
-    
-    func animateTextField(up: Bool) {
-        
-        var movement = (up ? -(kbHeight - 150) : (kbHeight - 150))
-        
-        print("movement: \(movement)")
-        
-        UIView.animateWithDuration(0.3, animations: {
-            self.view.frame = CGRectOffset(self.view.frame, 0, movement)
-        })
+            newFrame.origin.y -= offset
+            
+            self.view.frame = newFrame
+            
+        }, completion: nil)
     }
     
     // MARK: - Gesture
