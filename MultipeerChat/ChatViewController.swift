@@ -14,8 +14,8 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
     @IBOutlet weak var tblView: UITableView!
     @IBOutlet weak var inputTF: UITextField!
     
-    var session:MCSession?
-    var peerID:MCPeerID?
+    var session:MCSession!
+    var peerID:MCPeerID!
     var dataArray = [[String:AnyObject]]()
     var kbHeight: CGFloat!
     
@@ -33,7 +33,7 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
         self.view.addGestureRecognizer(recognizer)
         
         //UI
-        self.title = self.peerID?.displayName
+        self.title = self.peerID!.displayName
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -133,18 +133,27 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
     func refreshChatList(notification:NSNotification) {
         
         let msgDictionary = notification.object as! [String: AnyObject]
-        self.dataArray.append(msgDictionary)
-    
-        updateTableview()
+        let peerIDName = msgDictionary["peerIDName"] as! String
+        
+        if peerIDName == self.peerID!.displayName {
+        
+            self.dataArray.append(msgDictionary)
+            updateTableview()
+
+            //clear counter
+            let defaults = NSUserDefaults.standardUserDefaults()
+            defaults.setObject("0", forKey: self.peerID.displayName+"counter")
+        }
     }
     
     // MARK: - IBActions
     
     @IBAction func sendTapped(sender: AnyObject) {
         
-        //let trimmedInput = self.inputTF.text.stringByTrimmingCharactersInSet(.whitespaceCharacterSet())
+        let trimmedInput = self.inputTF.text.stringByTrimmingCharactersInSet(.whitespaceCharacterSet())
+        let len = count(trimmedInput)
         
-        if self.inputTF.text != "" {
+        if len > 0 {
         
             var error:NSError?
             
@@ -165,15 +174,13 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
                 //let chatData = NSKeyedArchiver.archivedDataWithRootObject(self.dataArray)
                 let defaults = NSUserDefaults.standardUserDefaults()
                 defaults.setObject(self.dataArray, forKey: self.peerID!.displayName)
+
+                //refresh table
+                self.tblView.reloadData()
                 
-                //dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    
-                    self.tblView.reloadData()
-                    
-                    var lastIndex = NSIndexPath(forRow: self.dataArray.count - 1, inSection: 0)
-                    self.tblView.scrollToRowAtIndexPath(lastIndex, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
-                //})
-                
+                var lastIndex = NSIndexPath(forRow: self.dataArray.count - 1, inSection: 0)
+                self.tblView.scrollToRowAtIndexPath(lastIndex, atScrollPosition: UITableViewScrollPosition.Bottom, animated: true)
+
                 self.inputTF.text = ""
             }
             
@@ -182,6 +189,8 @@ class ChatViewController: UIViewController, UITextFieldDelegate, UITableViewData
             var alert = UIAlertController(title: "Invalid", message: "Please enter your text message", preferredStyle: UIAlertControllerStyle.Alert)
             alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: nil))
             self.presentViewController(alert, animated: true, completion: nil)
+            
+            self.inputTF.text = ""
         }
     }
     

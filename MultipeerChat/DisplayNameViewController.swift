@@ -84,12 +84,17 @@ class DisplayNameViewController: UIViewController {
         // Pass the selected object to the new view controller.
         
         if segue.identifier == "SegueMain" {
+            
+            let trimmedInput = self.displayNameTF.text.stringByTrimmingCharactersInSet(.whitespaceCharacterSet())
+            let len = count(trimmedInput)
         
-            if self.displayNameTF.text == "" {
+            if len == 0 {
                 
                 var alert = UIAlertController(title: "Invalid", message: "Please enter your display name", preferredStyle: UIAlertControllerStyle.Alert)
                 alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: nil))
                 self.presentViewController(alert, animated: true, completion: nil)
+                
+                self.displayNameTF.text = ""
             }
             else {
                 
